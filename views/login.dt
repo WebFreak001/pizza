@@ -1,0 +1,28 @@
+doctype html
+html
+	head
+		title Login
+		meta(http-equiv="X-UA-Compatible", content="IE=edge")
+		meta(name="viewport", content="width=device-width, initial-scale=1")
+		link(rel="stylesheet", href="/css/style.css")
+	body
+		.userpanel.standalone
+			form.login(action="/auth", method="POST")
+				- if (showError == "fail")
+					p.error Falsche Benutzerdaten.
+				- else if (showError == "username")
+					p.error Ungültiger Benutzername.
+				- else if (showError == "password")
+					p.error Ungültiges Passwort.
+				- else if (showError == "dupusername")
+					p.error Benutzername vergeben.
+				- else if (showError.length)
+					p.error Fehler bei der Anmeldung.
+				input(type="hidden", name="invite", value=invite)
+				label.input
+					span Benutzername
+					input(type="text", name="username")
+				label.input
+					span Passwort
+					input(type="password", name="password")
+				input(type="submit", value="Login")

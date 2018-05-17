@@ -1,0 +1,98 @@
+extends layout.dt
+
+block content
+	- import data;
+	- string targetName = req.query.get("user", "");
+	table.admin
+		- if (targetName.length)
+			- auto targetNullable = User.tryFindOne(["username": targetName]);
+			- if (targetNullable.isNull) goto ListUsers;
+			- auto target = targetNullable.isNull ? User.init : targetNullable.get;
+			thead
+				tr
+					th Property
+					th Action
+			tbody
+				tr
+					td(colspan=2)= target.username
+				tr
+					td
+						label.input
+							span Guthaben
+							input#money(type="number", step="0.01", value=(target.money / 100.0))
+					td
+						button(onclick="updateField(this, 'money')") Update
+				tr
+					td
+						label.input
+							span Name
+							input#realname(type="text", value=target.realname)
+					td
+						button(onclick="updateField(this, 'realname')") Update
+				tr
+					td
+						label.input
+							span Vorname
+							input#givenname(type="text", value=target.givenname)
+					td
+						button(onclick="updateField(this, 'givenname')") Update
+				- if (targetName != user.username)
+					tr
+						td
+							label
+								input(type="checkbox", onchange="updateAdmin(this)")
+								| Admin
+		- else
+			- ListUsers:
+			thead
+				tr
+					th Benutzer
+					th Guthaben
+			tbody
+				- foreach (other; User.findAll)
+					tr
+						td: a(href="/admin?user=" ~ other.username)= other.username
+						td!= renderPrice(other.money / 100.0)
+				tr
+					td: button(onclick="inviteUser(this)") Invite User
+
+	- if (targetName.length)
+		script.
+			function updateField(btn, type, optional) {
+				btn.disabled = true;
+				var field = document.getElementById(type);
+				var xhr = new XMLHttpRequest();
+				xhr.open("POST", "/set_" + type);
+				xhr.setRequestHeader("Content-Type", "application/json; charset=utf-8");
+				var obj = {
+					user: "#{targetName}"
+				};
+				if (type == "admin")
+					obj[type] = optional;
+				else if (type == "money")
+					obj[type] = Math.round(parseFloat(field.value) * 100);
+				else
+					obj[type] = field.value;
+				xhr.send(JSON.stringify(obj));
+				xhr.onerror = function () {
+					btn.textContent = "Error";
+					btn.disabled = false;
+				}
+				xhr.onload = function () {
+					btn.disabled = false;
+				}
+			}
+			function updateAdmin(cb) {
+				updateField(cb, "admin", cb.checked);
+			}
+	script.
+		function inviteUser(btn) {
+			btn.disabled = true;
+			var xhr = new XMLHttpRequest();
+			xhr.open("POST", "/invite");
+			xhr.send();
+			xhr.onload = function () {
+				prompt("Invite Link", window.location.origin + "/login?invite=" + xhr.responseText);
+				btn.disabled = false;
+			}
+		}

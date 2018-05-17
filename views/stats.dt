@@ -1,0 +1,72 @@
+extends layout.dt
+
+block content
+	- import std.algorithm;
+
+	- struct Group { string item; int count; double sum = 0; }
+	- Group[] grouped;
+	- Group[] users;
+	- int numProducts;
+	- int numUnpaid;
+	- int numHistory;
+	- foreach (entry; history)
+		- numHistory++;
+		- foreach (order; entry.orders)
+			- if (!order.payed) numUnpaid++;
+			- numProducts += order.cart.length;
+			- auto userIdx = users.countUntil!(a => a.item == order.user);
+			- if (userIdx == -1)
+				- users ~= Group(order.user, 1, order.totalCost);
+			- else
+				- users[userIdx].count++; users[userIdx].sum += order.totalCost;
+			- foreach (product; order.cart)
+				- auto i = grouped.countUntil!(a => a.item == product.item);
+				- if (i == -1)
+					- grouped ~= Group(product.item, 1, product.price);
+				- else
+					- grouped[i].count++; grouped[i].sum += product.price;
+
+	h2 Bestellstatistiken (#{numHistory} Total)
+	- bool sortCount = req.query.get("by", "sum") == "count";
+	- int sumCount; double sumTotal;
+	table.orders
+		thead
+			tr
+				th Gericht
+				th: a(href="/stats?by=sum") Bestellungen
+				th: a(href="/stats?by=count") Einnahmen
+		tbody
+			- sumCount = 0; sumTotal = 0;
+			- foreach (item; grouped.sort!((a, b) => sortCount ? a.count > b.count : a.sum > b.sum))
+				- sumCount += item.count; sumTotal += item.sum;
+				tr
+					td= item.item
+					td= item.count
+					td!= renderPrice(item.sum)
+		tfoot
+			tr
+				td Total
+				td= sumCount
+				td!= renderPrice(sumTotal)
+
+	h2 Nutzerstatistiken
+	table.orders
+		thead
+			tr
+				th Benutzer
+				th Bestellungen
+				th Ausgaben
+		tbody
+			- sumCount = 0; sumTotal = 0;
+			- foreach (other; users.sort!((a, b) => sortCount ? a.count > b.count : a.sum > b.sum))
+				- sumCount += other.count; sumTotal += other.sum;
+				tr
+					td= other.item
+					td= other.count
+					td!= renderPrice(other.sum)
+		tfoot
+			tr
+				td Total
+				td= sumCount
+				td!= renderPrice(sumTotal)
+

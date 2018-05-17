@@ -1,0 +1,333 @@
+@import url('https://fonts.googleapis.com/css?family=Roboto:300,400,500');
+
+body
+{
+	font-family: Roboto, Arial, Helvetica, sans-serif;
+	font-weight: 400;
+	padding: 0;
+	margin: 0;
+	background-color: #efefef;
+}
+
+nav
+{
+	display: flex;
+	flex-direction: row;
+	justify-content: space-between;
+	align-content: stretch;
+	background: white;
+	box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+	margin: 16px auto;
+	max-width: 1000px;
+	box-sizing: border-box;
+}
+
+body > h1, body > h2
+{
+	text-align: center;
+	font-weight: 300;
+	margin-top: 2em;
+	margin-bottom: 0;
+}
+
+p.closed
+{
+	text-align: center;
+	font-weight: 500;
+}
+
+nav > a
+{
+	display: block;
+	padding: 16px;
+	flex-grow: 1;
+	flex-shrink: 1;
+	text-align: center;
+	text-decoration: none;
+	font-weight: 500;
+	color: #3F51B5;
+	transition: background-color 0.1s ease-out;
+}
+
+nav > a:hover
+{
+	background-color: rgba(0, 0, 0, 0.1);
+}
+
+#guest.hidden
+{
+	display: none;
+}
+
+.order, .actions
+{
+	margin: 16px auto;
+	max-width: 1000px;
+	box-sizing: border-box;
+}
+
+.order > h1
+{
+	padding: 16px;
+	margin: 0;
+	font-weight: 300;
+}
+
+.order > .actions, body > .actions
+{
+	padding: 8px;
+}
+
+.actions > a
+{
+	text-decoration: none;
+	cursor: default;
+}
+
+button
+{
+	padding: 8px 16px;
+	border: none;
+	background: #3F51B5;
+	box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+	border-radius: 2px;
+	color: white;
+	font-family: Roboto, Arial, Helvetica, sans-serif;
+	font-weight: 500;
+	margin: 8px;
+	transition: background-color 0.1s ease-out;
+}
+
+button:hover, button:focus
+{
+	background: #6775c9;
+}
+
+button:disabled, button:disabled:hover
+{
+	background: gray;
+	cursor: default;
+}
+
+.step.blank
+{
+	padding: 16px;
+}
+
+.step
+{
+	display: block;
+}
+
+.step.inactive
+{
+	display: none;
+}
+
+.order
+{
+	background: white;
+	box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+}
+
+label.input
+{
+	display: block;
+	padding-top: 4px;
+}
+
+label.input > span
+{
+	font-size: 0.8em;
+	color: rgba(0, 0, 0, 0.54);
+}
+
+label.input > input, label.input > select, label.input > textarea
+{
+	display: block;
+	width: 100%;
+}
+
+.step > .cart
+{
+	display: block;
+	margin: 16px;
+	padding: 16px;
+	background-color: rgba(0, 0, 0, 0.05);
+}
+
+.step > .selector
+{
+	display: flex;
+}
+
+ul.items
+{
+	flex-grow: 1;
+	flex-shrink: 1;
+	list-style: none;
+	max-height: 50vh;
+	overflow-y: auto;
+	padding: 0;
+	margin: 0;
+	margin-left: 16px;
+}
+
+ul.items > li
+{
+	display: block;
+	padding: 8px;
+	margin: 0;
+	transition: background-color 0.1s ease-out;
+}
+
+ul.items > li.header
+{
+	font-weight: 500;
+	text-align: center;
+}
+
+ul.items > li:not(.header):hover, ul.items > li.active
+{
+	background-color: rgba(0, 0, 0, 0.1);
+}
+
+ul.items > li:not(.header) > .name
+{
+	float: left;
+	font-weight: 500;
+}
+
+ul.items > li:not(.header) > .price
+{
+	float: right;
+	font-weight: 300;
+}
+
+ul.items > li > .description
+{
+	clear: both;
+	float: none;
+	font-weight: 400;
+	color: rgba(0, 0, 0, 0.54);
+	margin-top: 8px;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+ul.items > li:after
+{
+	content: "";
+	display: block;
+	clear: both;
+}
+
+.step > .selector > .customization
+{
+	flex-grow: 3;
+	flex-shrink: 1;
+	padding: 16px;
+}
+
+ul.payment
+{
+	list-style: none;
+}
+
+ul.payment > li
+{
+	padding: 16px;
+}
+
+table.items
+{
+	width: 100%;
+}
+
+table.items th
+{
+	text-align: left;
+}
+
+table.orders, table.admin
+{
+	background: white;
+	width: 100%;
+	max-width: 1000px;
+	margin: 16px auto;
+	border-collapse: collapse;
+	box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+}
+
+table.orders th, table.admin th
+{
+	text-align: left;
+}
+
+table.orders th, table.orders td, table.admin th, table.admin td
+{
+	padding: 8px;
+}
+
+h1, h2, h3, h4, h5, h6, strong, b, th
+{
+	font-weight: 500;
+}
+
+img.icon
+{
+	max-width: 50%;
+	max-height: 50vh;
+	width: auto;
+	flex-grow: 0;
+	flex-shrink: 1;
+}
+
+p.error
+{
+	color: red;
+}
+
+.userpanel
+{
+	max-width: 400px;
+	position: absolute;
+	top: 16px;
+	right: 16px;
+	background: white;
+	margin: 16px;
+	padding: 16px;
+	box-sizing: border-box;
+	box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+}
+
+.userpanel.standalone
+{
+	position: static;
+	max-width: 1000px;
+	margin: 16px auto;
+}
+
+@media screen and (max-width: 1200px)
+{
+	.userpanel
+	{
+		position: static;
+		max-width: 1000px;
+		margin: 16px auto;
+	}
+}
+
+.dialog {
+	position: absolute;
+	top: 16px;
+	left: 0;
+	right: 0;
+	max-width: 800px;
+	margin: 16px auto;
+	box-sizing: border-box;
+	padding: 32px;
+	box-shadow: 0 4px 11px rgba(0, 0, 0, 0.4);
+	background: white;
+}

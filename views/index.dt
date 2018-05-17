@@ -1,0 +1,78 @@
+extends layout.dt
+
+block content
+	- import std.datetime;
+	- import data;
+	- if (!sd.currentShop.valid || sd.orderClosed)
+		p.closed Bestellungen sind derzeit geschlossen.
+	- else
+		.order
+			h1 Bestellung bei #{shop.name} am #{(cast(Date)sd.date).toSimpleString}
+			.stepper
+				.step.blank(data-step="0")
+					label.input
+						span Bestellen für
+						select#profile
+							- foreach (user; User.findAll)
+								option(value=user.username) #{user.givenname} #{user.realname}
+							option(value="guest", selected=!user.bsonID.valid) Gast
+							- if (user.bsonID.valid)
+								option(value=user.username, selected) F&uuml;r mich selbst
+					label.input#guest(class=user.bsonID.valid ? "hidden" : "")
+						span Name
+						input(type="text")
+				.step.inactive(data-step="1")
+					.cart
+						.total
+							|!= "Total: "
+							span 0.00
+							|!= " &euro;"
+						table.items
+							thead
+								tr
+									th
+									th Gericht
+									th Preis
+									th Bemerkung
+							tbody
+					.selector
+						ul.items
+							- foreach (item; shop.items)
+								- if (item.variants.length)
+									- foreach (v; item.variants)
+										li(data=serializeToJsonString(item), data-price=v.price, class=item.header ? "header" : "")
+											.name= item.variantName(v)
+											.price!= renderPrice(v.price)
+											- if (item.description.length)
+												.description(title=item.description)= item.description
+								- else
+									li(data=serializeToJsonString(item), class=item.header ? "header" : "")
+										.name= item.name
+										- if (item.description.length)
+											.description(title=item.description)= item.description
+						.customization
+							#selectedname
+							label.input#price
+								span Preis
+								input(type="number", step="0.01", min="0", max="100", disabled)
+							label.input#note
+								span Bemerkung
+								input(type="text", disabled)
+							button.add Hinzuf&uuml;gen
+						img.icon(style="float:right;display:none")
+				.step.blank.inactive(data-step="2")
+					form.final
+						p= "Preis "
+							span.price
+						p= "Kaufen für "
+							span.profile
+						p Bezahlen als #{user.username}
+						- if (user.username.length)
+							label
+								input#payonline(type="checkbox", data-money=user.money)
+								| Mit Online Guthaben zahlen.
+						textarea.note(placeholder="Bemerkung")
+			.actions
+				button.prev Zur&uuml;ck
+				button.next Weiter
+	script(src="/js/script.js")

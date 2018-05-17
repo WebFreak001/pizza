@@ -1,0 +1,13 @@
+{
+	"dependencies": {
+		"vibe-d": "~>0.8.3",
+		"vibe-d:tls": "~>0.8.3",
+		"arsd-official:dom": "~>2.0.0",
+		"mongoschemad": "~>2.5.3"
+	},
+	"versions": [
+		"VibeDefaultMain"
+	],
+	"libs-windows": ["libeay32", "ssleay32"],
+	"name": "pizza-web"
+}

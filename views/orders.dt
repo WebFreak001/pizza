@@ -1,0 +1,164 @@
+extends layout.dt
+
+block content
+	- if (!sd.currentShop.valid)
+		form.order.step.blank(action="/open", method="POST")
+			label.input
+				span Lieferdienst
+				select#placeselect(name="place")
+					- foreach (shop; Shop.findAll)
+						option(value=shop.bsonID.toString)= shop.name
+			button(type="submit") Bestellungen Öffnen
+			button(onclick="openImportDialog()", type="button") Lieferdienst Hinzuf&uuml;gen
+
+		.dialog.importDialog(style="display:none")
+			label.input
+				span URL (Lieferando)
+				input#importURL(type="text")
+			button(onclick="previewImport()") Import
+			button(onclick="closeImportDialog()") Abbrechen
+
+		.dialog.confirmImportDialog(style="display:none")
+			h2.shopname
+			ul.items
+			button#doimportbtn(onclick="doImport()", disabled) Best&auml;tigen
+			button(onclick="closeImportDialog()") Abbrechen
+
+		script.
+			function openImportDialog() {
+				document.querySelector(".importDialog").style.display = "";
+			}
+
+			var importingShop;
+			function previewImport() {
+				var url = document.getElementById("importURL").value;
+				closeImportDialog();
+				document.querySelector("h2.shopname").textContent = "";
+				document.querySelector(".confirmImportDialog").style.display = "";
+				document.getElementById("doimportbtn").disabled = true;
+				var items = document.querySelector("ul.items");
+				while (items.firstChild)
+					items.removeChild(items.firstChild);
+				var xhr = new XMLHttpRequest();
+				xhr.open("POST", "/import");
+				xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+				xhr.onload = function () {
+					var data = JSON.parse(xhr.responseText);
+					if (typeof data == "string")
+						alert("Error importing: " + data);
+					else {
+						document.getElementById("doimportbtn").disabled = false;
+						document.querySelector("h2.shopname").textContent = importingShop = data.name;
+						for (var i = 0; i < data.items.length; i++) {
+							var item = document.createElement("li");
+							if (data.items[i].header)
+								item.className = "header";
+							var name = document.createElement("div");
+							name.className = "name";
+							name.textContent = data.items[i].name;
+							var price = document.createElement("div");
+							price.className = "price";
+							var description = document.createElement("div");
+							description.className = "description";
+							item.appendChild(name);
+							if (data.items[i].variants.length > 0)
+							{
+								price.textContent = data.items[i].variants[0].price.toFixed(2) + " €";
+								item.appendChild(price);
+							}
+							if (data.items[i].description) {
+								description.setAttribute("title", description.textContent = data.items[i].description);
+								item.appendChild(description);
+							}
+							items.appendChild(item);
+						}
+					}
+				};
+				xhr.send("url=" + encodeURIComponent(url));
+			}
+
+			function doImport() {
+				var xhr = new XMLHttpRequest();
+				xhr.open("POST", "/import");
+				xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+				xhr.onload = function () {
+					var data = JSON.parse(xhr.responseText);
+					if (typeof data != "number")
+						alert("Error importing: " + data);
+					else {
+						var select = document.getElementById("placeselect");
+						var option = document.createElement("option");
+						option.setAttribute("value", data.toString());
+						option.textContent = importingShop;
+						select.appendChild(option);
+						select.value = data;
+						closeImportDialog();
+					}
+				};
+				xhr.send("confirm=true");
+			}
+
+			function closeImportDialog() {
+				document.getElementById("importURL").value = "";
+				document.querySelector(".importDialog").style.display = "none";
+				document.querySelector(".confirmImportDialog").style.display = "none";
+			}
+	- else
+		table.orders
+			thead
+				tr
+					th Bezahlt
+					th Benutzer
+					th Bemerkung
+					th Total
+					th Bestellung
+			tbody
+				- foreach (order; sd.orders)
+					tr
+						td
+							- if (!sd.orderClosed && !order.payonline)
+								a(href="/delete-order?id=" ~ order.id, title="Bestellung entfernen", onclick="delayLink(this, 'Soll diese Bestellung wirklich entfernt werden?\\nSie müssen diese Bestellung neu abschließen wenn Sie sie wiederherstellen möchten.', event)")
+									svg(style="width:24px;height:24px", viewBox="0 0 24 24")
+										path(fill="#000000", d="M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z")
+							input(type="checkbox", checked=order.payed, disabled=order.payonline, onclick="setPayed(event, this, this.checked, '#{order.id}')")
+						td= order.user
+						td= order.note
+						td!= renderPrice(order.totalCost)
+						td
+							table
+								tbody
+									- foreach (entry; order.cart)
+										tr
+											td!= renderPrice(entry.price)
+											td= entry.item
+											td= entry.note.length ? "Bemerkung: " ~ entry.note : ""
+
+		- if (admin)
+			.actions
+				a(href="/close", onclick="delayLink(this, 'Soll die Bestellung wirklich geschloßen werden?\\nEs werden keine Bestellungen mehr vorgeschlagen, allerdings könnten immernoch aktive Bestellungen empfangen werden.', event)")
+					button Bestellungen Schlie&szlig;en
+				a(href="/finish", onclick="delayLink(this, 'Soll die Bestellung wirklich archiviert werden?\\nDie Bestellübersicht geht hierdurch verloren und wird in die Statistik aufgenommen!', event)")
+					button(disabled=!sd.orderClosed) Bestellungen Archivieren
+
+	- if (admin)
+		script.
+			function setPayed(event, cb, payed, id) {
+				var xhr = new XMLHttpRequest();
+				xhr.open("POST", "/payed");
+				xhr.setRequestHeader("Content-Type", "application/json; charset=utf-8");
+				xhr.onload = function () {
+					if (xhr.status == 200)
+						cb.checked = JSON.parse(xhr.responseText);
+				};
+				xhr.send(JSON.stringify({ payed: payed, id: id }));
+			}
+	- else
+		script.
+			function setPayed(event) { event.preventDefault(); }
+
+	script.
+		function delayLink(a, msg, event) {
+			event.preventDefault();
+			if (confirm(msg))
+				window.location.href = a.href;
+		}

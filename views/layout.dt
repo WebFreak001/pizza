@@ -1,0 +1,50 @@
+doctype html
+html
+	head
+		title Bestellungen
+		meta(http-equiv="X-UA-Compatible", content="IE=edge")
+		meta(name="viewport", content="width=device-width, initial-scale=1")
+		link(rel="stylesheet", href="/css/style.css")
+	body
+		- import std.format;
+		- import vibe.data.json;
+		- import data;
+
+		- string renderPrice(double price)
+			- if (price != price) return "??.? &euro;";
+			- return format("%.2f &euro;", price);
+
+		- auto shopNullable = Shop.tryFindById(sd.currentShop);
+		- auto shop = shopNullable.isNull ? Shop.init : shopNullable.get;
+		- auto user = req.getUser;
+
+		.userpanel
+			- if (user != User.init)
+				p Willkommen, #{user.givenname}
+				p Guthaben: #[b!= renderPrice(user.money / 100.0)]
+				a(href="/logout") Logout
+			- else
+				form.login(action="/auth", method="POST")
+					- if (req.query.get("login", "") == "fail")
+						p.error Falsche Benutzerdaten.
+					label.input
+						span Benutzername
+						input(type="text", name="username")
+					label.input
+						span Passwort
+						input(type="password", name="password")
+					input(type="submit", value="Login")
+
+		- if (user != User.init)
+			script var userData = #{serializeToJsonString(user)};
+		- else
+			script var userData = undefined;
+
+		nav
+			a(href="/") Neue Bestellung
+			a(href="/view") Aktuelle Bestellungen
+			a(href="/stats") Statistiken
+			- if (user.admin)
+				a(href="/admin") Admin
+
+		block content
